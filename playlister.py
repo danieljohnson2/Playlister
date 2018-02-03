@@ -9,16 +9,29 @@ from fnmatch import fnmatch
 extensions = ['*.mp3', '*.wma']
 initial_path = getcwd()
 
-def isvalidfile(name):
+def findmediafiles(dir):
     """
-    The determines if the file is usable in the playlist; it looks
-    for specific file extensions, but is crudely case insensitive.
+    Finds the paths to each media file in the directory. The produces
+    relative paths relative to the current directory, and sorts them
+    too.
     """
-    if isfile(name):
-        for pat in extensions:
-            if fnmatch(name.lower(), pat):
-                return True
-    return False
+    
+    def isvalidfile(name):
+        """
+        Determines if the file is usable in the playlist; it looks
+        for specific file extensions, but is crudely case insensitive.
+        """
+        if isfile(name):
+            for pat in extensions:
+                if fnmatch(name.lower(), pat):
+                    return True
+        return False
+
+    allfiles = iglob("**/*", recursive=True)
+    validfiles = [fn for fn in allfiles if isvalidfile(fn)]
+    validfiles.sort()
+    return validfiles
+
 
 def makeplaylist(dir):
     """
@@ -32,10 +45,9 @@ def makeplaylist(dir):
     
     try:
         with open(playlist_name, "w") as f:
-            for filename in iglob("**/*", recursive=True):
-                if isvalidfile(filename):
-                    f.write(filename)
-                    f.write('\n')
+            for filename in findmediafiles(dir):
+                f.write(filename)
+                f.write('\n')
     finally:
         chdir(initial_path)
 
