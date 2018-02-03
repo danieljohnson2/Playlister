@@ -2,7 +2,7 @@
 
 from sys import argv
 from os import chdir, getcwd
-from os.path import isdir, isfile, basename
+from os.path import isdir, isfile, basename, sep
 from glob import iglob
 from fnmatch import fnmatch
 
@@ -16,6 +16,7 @@ def isvalidfile(name):
     return False
 
 for dir in argv[1:]:
+    dir = dir.rstrip(sep)
     initial_path = getcwd()
     if isdir(dir) and not dir.startswith('.'):
         playlist_name = basename(dir) + ".m3u"
