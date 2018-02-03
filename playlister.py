@@ -53,8 +53,12 @@ def makeplaylist(dir):
 
 # This just processe sthe command line, skipping the first
 # entry. That's just the filename of this script.
-for dir in argv[1:]:
-    if isdir(dir):
-        makeplaylist(dir)
-    else:
-        print("{} is not a directory".format(dir), file=stderr)
+
+if len(argv) < 2:
+    print("Usage: playlister.py DIR1 DIR2 ...")
+else:
+    for dir in argv[1:]:
+        if isdir(dir):
+            makeplaylist(dir)
+        else:
+            print("{} is not a directory".format(dir), file=stderr)
