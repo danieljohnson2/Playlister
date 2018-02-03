@@ -9,14 +9,14 @@ from fnmatch import fnmatch
 extensions = ['*.mp3', '*.wma']
 initial_path = getcwd()
 
-def findmediafiles(dir):
+def find_media_files(dir):
     """
     Finds the paths to each media file in the directory. The produces
     relative paths relative to the current directory, and sorts them
     too.
     """
     
-    def isvalidfile(name):
+    def is_valid_file(name):
         """
         Determines if the file is usable in the playlist; it looks
         for specific file extensions, but is crudely case insensitive.
@@ -26,26 +26,29 @@ def findmediafiles(dir):
                 if fnmatch(name.lower(), pat):
                     return True
         return False
+    
+    all_files = iglob("**/*.*", recursive=True)
+    valid_files = [fn for fn in all_files if is_valid_file(fn)]
+    valid_files.sort()
+    return valid_files
 
-    allfiles = iglob("**/*", recursive=True)
-    validfiles = [fn for fn in allfiles if isvalidfile(fn)]
-    validfiles.sort()
-    return validfiles
 
-
-def makeplaylist(dir):
+def make_playlist(dir):
     """
     Creates the playlist for for a directory; if one exists, this function
     will replace it.
     """
     playlist_name = basename(dir.rstrip(sep)) + ".m3u"
     print("Creating " + playlist_name)
-            
+     
+    # change current director so that find_media_files produces
+    # paths relative to 'dir'
+        
     chdir(dir)
     
     try:
         with open(playlist_name, "w") as f:
-            for filename in findmediafiles(dir):
+            for filename in find_media_files(dir):
                 f.write(filename)
                 f.write('\n')
     finally:
@@ -59,6 +62,6 @@ if len(argv) < 2:
 else:
     for dir in argv[1:]:
         if isdir(dir):
-            makeplaylist(dir)
+            make_playlist(dir)
         else:
             print("{} is not a directory".format(dir), file=stderr)
