@@ -8,21 +8,41 @@ from fnmatch import fnmatch
 
 initial_path = getcwd()
 
-def find_media_files(dir, extensions = ['*.mp3', '*.MP3', '*.wma', '*.WMA']):
+def find_media_files(dir, extensions = ['mp3', 'wma']):
     """
     Finds the paths to each media file in the directory. The produces
     relative paths, relative to the current directory, and sorts them
     too. Only files with the extensions given are returend.
     """
     
-    files = []
-    
-    for pat in extensions:
-        files.extend(iglob("**/" + pat, recursive=True))
-    
-    files.sort()
-    return files
+    def make_pattern(ext):
+        """
+        Creates the glob pattern for a particular extension; it
+        matches the file extension case insensitively, even on
+        Linux.
+        """
+        def insensitive(ch):
+            """
+            If 'ch' is a letter, returns a pattern that matches it
+            in either case. If not, returns it unchanged.
+            """
+            if ch.isalpha():
+                return '[{}{}]'.format(ch.lower(), ch.upper())
+            else:
+                return ch
 
+        return "**/*." + ''.join((insensitive(c) for c in ext))
+    
+    # use a set in case a file matches two patterns; we want each file
+    # once only.
+    
+    files = set()
+    
+    for ext in extensions:
+        for fn in iglob(make_pattern(ext), recursive=True):
+            files.add(fn)
+    
+    return sorted(files)
 
 def make_playlist(dir):
     """
