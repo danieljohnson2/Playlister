@@ -8,7 +8,7 @@ from fnmatch import fnmatch
 
 initial_path = getcwd()
 
-def find_media_files(dir, extensions = ['mp3', 'wma']):
+def find_media_files(dir, extensions = ["mp3", "wma"]):
     """
     Finds the paths to each media file in the directory. The produces
     relative paths, relative to the current directory, and sorts them
@@ -27,11 +27,11 @@ def find_media_files(dir, extensions = ['mp3', 'wma']):
             in either case. If not, returns it unchanged.
             """
             if ch.isalpha():
-                return '[{}{}]'.format(ch.lower(), ch.upper())
+                return "[{}{}]".format(ch.lower(), ch.upper())
             else:
                 return ch
 
-        return "**/*." + ''.join((insensitive(c) for c in ext))
+        return "**/*." + "".join((insensitive(c) for c in ext))
     
     # use a set in case a file matches two patterns; we want each file
     # once only.
@@ -61,7 +61,7 @@ def make_playlist(dir):
         with open(playlist_name, "w") as f:
             for filename in find_media_files(dir):
                 f.write(filename)
-                f.write('\n')
+                f.write("\n")
     finally:
         chdir(initial_path)
 
