@@ -6,31 +6,22 @@ from os.path import isdir, isfile, basename, sep
 from glob import iglob
 from fnmatch import fnmatch
 
-extensions = ['*.mp3', '*.wma']
 initial_path = getcwd()
 
-def find_media_files(dir):
+def find_media_files(dir, extensions = ['*.mp3', '*.MP3', '*.wma', '*.WMA']):
     """
     Finds the paths to each media file in the directory. The produces
-    relative paths relative to the current directory, and sorts them
-    too.
+    relative paths, relative to the current directory, and sorts them
+    too. Only files with the extensions given are returend.
     """
     
-    def is_valid_file(name):
-        """
-        Determines if the file is usable in the playlist; it looks
-        for specific file extensions, but is crudely case insensitive.
-        """
-        if isfile(name):
-            for pat in extensions:
-                if fnmatch(name.lower(), pat):
-                    return True
-        return False
+    files = []
     
-    all_files = iglob("**/*.*", recursive=True)
-    valid_files = [fn for fn in all_files if is_valid_file(fn)]
-    valid_files.sort()
-    return valid_files
+    for pat in extensions:
+        files.extend(iglob("**/" + pat, recursive=True))
+    
+    files.sort()
+    return files
 
 
 def make_playlist(dir):
