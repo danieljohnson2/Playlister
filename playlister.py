@@ -8,11 +8,68 @@ from fnmatch import fnmatch
 
 initial_path = getcwd()
 
+def make_playlist(dir):
+    """
+    Creates the playlist for for a directory; if one exists, this function
+    will replace it.
+    """
+    playlist_name = basename(dir.rstrip(sep)) + ".m3u"
+    print("Creating", playlist_name)
+     
+    # change current director so that find_media_files produces
+    # paths relative to 'dir'
+        
+    chdir(dir)
+    
+    try:
+        with open(playlist_name, "w") as f:
+            for filename in find_media_files(dir):
+                f.write(filename)
+                f.write("\n")
+    finally:
+        chdir(initial_path)
+
+def find_media_files(dir, extensions = ["mp3", "wma"]):
+    """
+    Finds the paths to each media file in the directory. The produces
+    relative paths, relative to the current directory, and sorts them
+    too. Only files with the extensions given are returend.
+    """
+    
+    def make_pattern(ext):
+        """
+        Creates the glob pattern for a particular extension; it
+        matches the file extension case insensitively, even on
+        Linux.
+        """
+        def insensitive(ch):
+            """
+            If 'ch' is a letter, returns a pattern that matches it
+            in either case. If not, returns it unchanged.
+            """
+            if ch.isalpha():
+                return "[{}{}]".format(ch.lower(), ch.upper())
+            else:
+                return ch
+
+        return "**/*." + "".join((insensitive(c) for c in ext))
+    
+    # use a set in case a file matches two patterns; we want each file
+    # once only.
+    
+    files = set()
+    
+    for ext in extensions:
+        for fn in iglob(make_pattern(ext), recursive=True):
+            files.add(fn)
+        
+    return sorted_smartly(files)
+
 def sorted_smartly(to_sort):
     """
     Sorts the given list of strings alphabetically, but with
-    extra smarts to handle simple numbers. It effectly sorts
-    them as if they with 0 padded so all numbers are the same
+    extra smarts to handle simple numbers. It effectly sorts them
+    as if they had been 0 padded so all numbers were the same
     length; this makes them sort numerically.
     """
     def split_digits(text):
@@ -54,63 +111,6 @@ def sorted_smartly(to_sort):
         return "".join(parts)
         
     return sorted(to_sort, key=pad_numbers)
-    
-def find_media_files(dir, extensions = ["mp3", "wma"]):
-    """
-    Finds the paths to each media file in the directory. The produces
-    relative paths, relative to the current directory, and sorts them
-    too. Only files with the extensions given are returend.
-    """
-    
-    def make_pattern(ext):
-        """
-        Creates the glob pattern for a particular extension; it
-        matches the file extension case insensitively, even on
-        Linux.
-        """
-        def insensitive(ch):
-            """
-            If 'ch' is a letter, returns a pattern that matches it
-            in either case. If not, returns it unchanged.
-            """
-            if ch.isalpha():
-                return "[{}{}]".format(ch.lower(), ch.upper())
-            else:
-                return ch
-
-        return "**/*." + "".join((insensitive(c) for c in ext))
-    
-    # use a set in case a file matches two patterns; we want each file
-    # once only.
-    
-    files = set()
-    
-    for ext in extensions:
-        for fn in iglob(make_pattern(ext), recursive=True):
-            files.add(fn)
-        
-    return sorted_smartly(files)
-
-def make_playlist(dir):
-    """
-    Creates the playlist for for a directory; if one exists, this function
-    will replace it.
-    """
-    playlist_name = basename(dir.rstrip(sep)) + ".m3u"
-    print("Creating", playlist_name)
-     
-    # change current director so that find_media_files produces
-    # paths relative to 'dir'
-        
-    chdir(dir)
-    
-    try:
-        with open(playlist_name, "w") as f:
-            for filename in find_media_files(dir):
-                f.write(filename)
-                f.write("\n")
-    finally:
-        chdir(initial_path)
 
 # This just processes the command line, skipping the first
 # entry. That's just the filename of this script anyway.
