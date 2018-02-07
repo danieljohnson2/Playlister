@@ -8,16 +8,46 @@ from fnmatch import fnmatch
 
 initial_path = getcwd()
 
-def split_digits(text):
-    buffer=[]
-    for c in text:
-        if len(buffer) == 0:
-            buffer.append(c)
-        elif buffer[-1][-1].isdigit() == c.isdigit():
-            buffer[-1]+=c
-        else:
-            buffer.append(c)
-    return buffer
+def sorted_smartly(to_sort):
+    """
+    Sorts the given list of strings alphabetically, but with
+    extra smarts to handle simple numbers. It effectly sorts
+    them as if they with 0 padded so all numbers are the same
+    length; this makes them sort numerically.
+    """
+    def split_digits(text):
+        """
+        Splits a string into segments that cover every character; Digits
+        are placed in separate segments from everything else.
+        """
+        buffer=[]
+        for c in text:
+            if len(buffer) == 0:
+                buffer.append(c)
+            elif buffer[-1][-1].isdigit() == c.isdigit():
+                buffer[-1]+=c
+            else:
+                buffer.append(c)
+        return buffer
+
+    # This is how long we will make all the digits.
+    max_number_len = max((len(part)
+        for file in to_sort
+        for part in split_digits(file)
+        if part[0].isdigit()))
+    
+    def pad_numbers(text):
+        """
+        This breaks down the string given and padds any numbers
+        found, then reassambles it all.
+        """
+        parts = (
+            part.rjust(max_number_len, "0")
+            if part[0].isdigit() else part
+            for part in split_digits(text))
+        return "".join(parts)
+        
+    return sorted(to_sort, key=pad_numbers)
     
 def find_media_files(dir, extensions = ["mp3", "wma"]):
     """
@@ -53,19 +83,7 @@ def find_media_files(dir, extensions = ["mp3", "wma"]):
         for fn in iglob(make_pattern(ext), recursive=True):
             files.add(fn)
         
-    max_number_len = max((len(part)
-        for file in files 
-        for part in split_digits(file)
-        if part[0].isdigit()))
-    
-    def pad_numbers(file):
-        parts = (
-            part.rjust(max_number_len, "0")
-            if part[0].isdigit() else part
-            for part in split_digits(file))
-        return "".join(parts)
-        
-    return sorted(files, key=pad_numbers)
+    return sorted_smartly(files)
 
 def make_playlist(dir):
     """
@@ -88,8 +106,8 @@ def make_playlist(dir):
     finally:
         chdir(initial_path)
 
-# This just processe sthe command line, skipping the first
-# entry. That's just the filename of this script.
+# This just processes the command line, skipping the first
+# entry. That's just the filename of this script anyway.
 
 if len(argv) < 2:
     print("Usage: playlister.py DIR1 DIR2 ...")
