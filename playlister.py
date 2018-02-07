@@ -59,12 +59,12 @@ def find_media_files(dir, extensions = ["mp3", "wma"]):
         if part[0].isdigit()))
     
     def pad_numbers(file):
-        parts = (part.rjust(max_number_len, "0")
+        parts = (
+            part.rjust(max_number_len, "0")
+            if part[0].isdigit() else part
             for part in split_digits(file))
-        u = "".join(parts)
-        print("{} -> {}".format(file, u))
-        return u
-    
+        return "".join(parts)
+        
     return sorted(files, key=pad_numbers)
 
 def make_playlist(dir):
