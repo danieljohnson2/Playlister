@@ -8,6 +8,17 @@ from fnmatch import fnmatch
 
 initial_path = getcwd()
 
+def split_digits(text):
+    buffer=[]
+    for c in text:
+        if len(buffer) == 0:
+            buffer.append(c)
+        elif buffer[-1][-1].isdigit() == c.isdigit():
+            buffer[-1]+=c
+        else:
+            buffer.append(c)
+    return buffer
+    
 def find_media_files(dir, extensions = ["mp3", "wma"]):
     """
     Finds the paths to each media file in the directory. The produces
@@ -41,8 +52,20 @@ def find_media_files(dir, extensions = ["mp3", "wma"]):
     for ext in extensions:
         for fn in iglob(make_pattern(ext), recursive=True):
             files.add(fn)
+        
+    max_number_len = max((len(part)
+        for file in files 
+        for part in split_digits(file)
+        if part[0].isdigit()))
     
-    return sorted(files)
+    def pad_numbers(file):
+        parts = (part.rjust(max_number_len, "0")
+            for part in split_digits(file))
+        u = "".join(parts)
+        print("{} -> {}".format(file, u))
+        return u
+    
+    return sorted(files, key=pad_numbers)
 
 def make_playlist(dir):
     """
