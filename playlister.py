@@ -20,31 +20,37 @@ def sorted_smartly(to_sort):
         Splits a string into segments that cover every character; Digits
         are placed in separate segments from everything else.
         """
-        buffer=[]
+        current = ""
         for c in text:
-            if len(buffer) == 0:
-                buffer.append(c)
-            elif buffer[-1][-1].isdigit() == c.isdigit():
-                buffer[-1]+=c
+            if current == "" or current[-1].isdigit() == c.isdigit():
+                current += c
             else:
-                buffer.append(c)
-        return buffer
+                yield current
+                current = c
+        if current != "": yield current
 
-    # This is how long we will make all the digits.
-    max_number_len = max((len(part)
+    # This is how long we will make all the numeric parts.
+    
+    numbers_lengths = (len(part)
         for file in to_sort
         for part in split_digits(file)
-        if part[0].isdigit()))
+        if part[0].isdigit())
+    max_number_len = max(numbers_lengths)
     
+    def pad_part(part):
+        """
+        Pads a part of the whole string to the maximum length. Only numeric
+        parts are padded; others are returned unchanged.
+        """
+        if part[0].isdigit(): return part.rjust(max_number_len, "0")
+        else: return part
+
     def pad_numbers(text):
         """
-        This breaks down the string given and padds any numbers
+        This breaks down the string given and pads any numbers
         found, then reassambles it all.
-        """
-        parts = (
-            part.rjust(max_number_len, "0")
-            if part[0].isdigit() else part
-            for part in split_digits(text))
+        """        
+        parts = (pad_part(part) for part in split_digits(text))
         return "".join(parts)
         
     return sorted(to_sort, key=pad_numbers)
@@ -91,7 +97,7 @@ def make_playlist(dir):
     will replace it.
     """
     playlist_name = basename(dir.rstrip(sep)) + ".m3u"
-    print("Creating " + playlist_name)
+    print("Creating", playlist_name)
      
     # change current director so that find_media_files produces
     # paths relative to 'dir'
@@ -116,4 +122,4 @@ else:
         if isdir(dir):
             make_playlist(dir)
         else:
-            print("{} is not a directory".format(dir), file=stderr)
+            print(dir, "is not a directory", file=stderr)
