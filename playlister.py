@@ -2,9 +2,8 @@
 
 from sys import argv, stderr
 from os import chdir, getcwd
-from os.path import isdir, isfile, basename, sep
+from os.path import isdir, basename, sep
 from glob import iglob
-from fnmatch import fnmatch
 
 initial_path = getcwd()
 
